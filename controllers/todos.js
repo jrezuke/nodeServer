@@ -13,16 +13,19 @@ router.get('/', function (req, res) {
 });
 
 router.post('/new', function(req, res, next){
-    //console.log(`req.body: ${req.body.test}`);
+    //console.log(`req.body.title: ${req.body.title}`);
+    //console.log(`req.body.started: ${req.body.started}`);
     let sql = 'INSERT INTO todo(id, title, started, completed, archived)';
-    let values = 'VALUES(nextval(\'todo_id_seq\'),$1,$2,null,null)';
+    let values = 'VALUES(nextval(\'todo_id_seq\'), $1, $2, null, null) RETURNING id';
     //let sql='INSERT INTO simple(id, name) VALUES(nextval(\'todo_id_seq\'), $1,$2,null,null)';
-    db.none(sql, [req.body.title, req.body.started])
-            .then(function () {
-                res.status(200)
+    
+    db.one(sql + values, [req.body.title, req.body.started])
+        .then(data => {
+            console.log(data.id);
+            res.status(200)
                   .json({
                     status: 'success',
-                    message: 'Inserted one puppy'
+                    id: data.id
                   });
               })
               .catch(function (err) {
